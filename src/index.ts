@@ -1,15 +1,13 @@
 import bsql3, { Database } from 'better-sqlite3';
+import * as dotenv from 'dotenv';
 import { XMLParser } from 'fast-xml-parser';
 import { decode } from 'html-entities';
 import cron from 'node-cron';
 import p from 'phin';
 import { Telegraf } from 'telegraf';
 
-import * as dotenv from 'dotenv';
 
 dotenv.config();
-
-
 
 interface RssArticle {
   guid: string,
@@ -34,15 +32,11 @@ const rssFetchArticles = async (): Promise<FormattedArticle[]> => {
 
   const res = await p({ url: `https://beteve.cat/feed/` });
 
-  // console.log(res.statusCode, res.headers.location);
-  // console.log(res.headers);
-
   const bodyStr = res.body.toString("utf8");
 
   const rssBuilder = new XMLParser({ processEntities: true, htmlEntities: true, });
   const rss = rssBuilder.parse(decode(bodyStr)) as RssFeed;
 
-  // console.log(rss);
   const articles = rss.rss.channel.item;
   const formattedArticles = (articles.map
     (({ title, link, pubDate, category, guid, description, ...rest }) =>
@@ -92,7 +86,6 @@ const main = async () => {
 
   db.exec(`CREATE TABLE IF NOT EXISTS articles 
                   (guid TEXT NOT NULL PRIMARY KEY, title TEXT, link TEXT, pubDate TEXT, category TEXT)`);
-  // title, link, pubDate, category, guid
 
   const bot = new Telegraf(BOT_API_KEY);
 
