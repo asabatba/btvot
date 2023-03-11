@@ -63,13 +63,22 @@ const rssFetchAndPublish = async (bot: Telegraf, db: Database) => {
 
     if (exists) return;
 
+    const date = (() => {
+
+      try {
+        return article.pubDate.toISOString();
+      } catch (error) {
+        return null;
+      }
+    })();
+
     console.log(`new article: ${article.title}`);
     await sendMessageDelay(bot, `${article.title}\n${article.link}`);
 
     db
       .prepare(`INSERT INTO articles (guid, title, link, pubDate, category) 
                       VALUES (?, ?, ?, ?, ?)`)
-      .run(article.guid, article.title, article.link, article.pubDate.toISOString(),
+      .run(article.guid, article.title, article.link, date,
         JSON.stringify(article.category));
   }
 
